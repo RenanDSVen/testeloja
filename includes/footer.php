@@ -1,0 +1,6 @@
+</main></div><script>
+document.querySelectorAll('[data-confirm]').forEach(x=>x.addEventListener('click',e=>{if(!confirm(x.dataset.confirm))e.preventDefault()}));
+document.addEventListener('keydown',e=>{if(e.key==='F2'){e.preventDefault();location.href='?page=pdv'}});
+const barcode=document.querySelector('input[name="codigo_barras"]');
+if(barcode){const note=document.createElement('small');barcode.insertAdjacentElement('afterend',note);let timer;barcode.addEventListener('input',()=>{clearTimeout(timer);note.textContent='';barcode.setCustomValidity('');if(!barcode.value.trim())return;timer=setTimeout(async()=>{try{const r=await fetch('api/barcode.php?code='+encodeURIComponent(barcode.value.trim()));const d=await r.json();if(d.exists){const i=d.item;note.textContent='Já cadastrado: '+i.nome+' / '+(i.cor||'-')+' / '+(i.tamanho||'-')+' — estoque '+i.estoque_atual;note.style.color='#b42318';barcode.setCustomValidity('Código já cadastrado');}else{note.textContent='Código disponível';note.style.color='#16875b';}}catch(e){}},350)});}
+</script></body></html>

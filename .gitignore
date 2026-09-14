@@ -1,0 +1,4 @@
+/storage/*.lock
+/storage/backups/*
+/assets/uploads/*
+/config/database.local.php
