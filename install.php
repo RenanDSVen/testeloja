@@ -10,7 +10,10 @@ if($_SERVER['REQUEST_METHOD']==='POST'){
   $pdo=new PDO(sprintf('mysql:host=%s;port=%d;charset=utf8mb4',$db['host'],$db['port']),$db['username'],$db['password'],[PDO::ATTR_ERRMODE=>PDO::ERRMODE_EXCEPTION]);
   $pdo->exec("CREATE DATABASE IF NOT EXISTS `{$db['database']}` CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci");
   $pdo->exec("USE `{$db['database']}`");
-  $pdo->exec(file_get_contents(__DIR__.'/database/schema.sql'));
+  $sql=file_get_contents(__DIR__.'/database/schema.sql');
+  foreach(preg_split('/;\\s*(?:\\r?\\n|$)/',$sql,-1,PREG_SPLIT_NO_EMPTY) as $statement){
+   if(trim($statement)!=='') $pdo->exec($statement);
+  }
   $nome=trim($_POST['nome']??'');$usuario=trim($_POST['usuario']??'');$senha=$_POST['senha']??'';
   if($nome===''||!preg_match('/^[a-zA-Z0-9._-]{3,60}$/',$usuario)||strlen($senha)<8) throw new RuntimeException('Informe nome, usuário válido e senha com no mínimo 8 caracteres.');
   $s=$pdo->prepare("INSERT INTO usuarios(nome,usuario,senha_hash,nivel) VALUES(?,?,?,'admin')");
