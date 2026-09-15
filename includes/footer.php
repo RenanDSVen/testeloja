@@ -1,6 +1,19 @@
 </main></div><script>
 document.querySelectorAll('[data-confirm]').forEach(x=>x.addEventListener('click',e=>{if(!confirm(x.dataset.confirm))e.preventDefault()}));
 document.addEventListener('keydown',e=>{if(e.key==='F2'){e.preventDefault();location.href='?page=pdv'}});
+const stockModal=document.getElementById('stockAdjustModal');
+if(stockModal){
+ const variationId=document.getElementById('stockVariationId'),productName=document.getElementById('stockProductName'),balance=document.getElementById('stockCurrentBalance'),quantity=document.getElementById('stockQuantity'),reason=document.getElementById('stockReason');
+ const closeStockModal=()=>{stockModal.hidden=true;stockModal.setAttribute('aria-hidden','true');document.body.classList.remove('modal-open');};
+ document.querySelectorAll('[data-stock-adjust]').forEach(button=>button.addEventListener('click',()=>{
+  variationId.value=button.dataset.id;productName.textContent=button.dataset.product;balance.textContent=button.dataset.stock+' peças';quantity.value='';reason.value='';
+  stockModal.hidden=false;stockModal.setAttribute('aria-hidden','false');document.body.classList.add('modal-open');requestAnimationFrame(()=>quantity.focus());
+ }));
+ stockModal.querySelectorAll('[data-modal-close]').forEach(button=>button.addEventListener('click',closeStockModal));
+ stockModal.addEventListener('click',event=>{if(event.target===stockModal)closeStockModal();});
+ document.addEventListener('keydown',event=>{if(event.key==='Escape'&&!stockModal.hidden)closeStockModal();});
+ document.getElementById('stockAdjustForm').addEventListener('submit',event=>{const submit=event.currentTarget.querySelector('button[type="submit"],button:not([type])');submit.disabled=true;submit.textContent='Salvando...';});
+}
 const barcode=document.querySelector('input[name="codigo_barras"]');
 if(barcode){const note=document.createElement('small');barcode.insertAdjacentElement('afterend',note);let timer;barcode.addEventListener('input',()=>{clearTimeout(timer);note.textContent='';barcode.setCustomValidity('');if(!barcode.value.trim())return;timer=setTimeout(async()=>{try{const r=await fetch('api/barcode.php?code='+encodeURIComponent(barcode.value.trim()));const d=await r.json();if(d.exists){const i=d.item;note.textContent='Já cadastrado: '+i.nome+' / '+(i.cor||'-')+' / '+(i.tamanho||'-')+' — estoque '+i.estoque_atual;note.style.color='#b42318';barcode.setCustomValidity('Código já cadastrado');}else{note.textContent='Código disponível';note.style.color='#16875b';}}catch(e){}},350)});}
 </script></body></html>
