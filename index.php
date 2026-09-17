@@ -71,19 +71,26 @@ if($page==='dashboard'){
 <div class="table-wrap stock-table"><table><thead><tr><th>Peça</th><th>Código / SKU</th><th>Local</th><th class="text-right">Custo</th><th class="text-right">Venda</th><th class="text-right">Saldo</th><th>Situação</th><th></th></tr></thead><tbody><?php foreach($vars as $v):$stock=(float)$v['estoque_atual'];$min=(float)$v['estoque_minimo'];$state=$stock<=0?'Sem estoque':($stock<=$min?'Estoque baixo':'Normal');$class=$stock<=0?'stock-out':($stock<=$min?'stock-low':'stock-ok');?><tr><td><strong><?=e($v['nome'])?></strong><small><?=e(($v['cor']?:'Sem cor').' · '.($v['tamanho']?:'Sem tamanho'))?></small></td><td><span class="code"><?=e($v['codigo_barras']?:$v['sku'])?></span><small><?=e($v['codigo_barras']?$v['sku']:'Código interno')?></small></td><td><?=e($v['localizacao']?:'—')?></td><td class="text-right"><?=money($v['preco_custo'])?></td><td class="text-right"><?=money($v['preco_venda'])?></td><td class="text-right stock-number"><?=e(number_format($stock,0,',','.'))?><small>Mín. <?=e(number_format($min,0,',','.'))?></small></td><td><span class="stock-badge <?=$class?>"><?=$state?></span></td><td><button type="button" class="btn ghost stock-adjust-button" data-stock-adjust data-id="<?=$v['id']?>" data-product="<?=e($v['nome'].' / '.($v['cor']?:'Sem cor').' / '.($v['tamanho']?:'Sem tamanho'))?>" data-stock="<?=e(number_format($stock,0,',','.'))?>">Ajustar</button></td></tr><?php endforeach?><?php if(!$vars):?><tr><td colspan="8" class="empty-state">Nenhuma peça encontrada com esses filtros.</td></tr><?php endif?></tbody></table></div>
 <div class="modal-backdrop" id="productCreateModal" hidden aria-hidden="true">
  <section class="modal-dialog product-modal" role="dialog" aria-modal="true" aria-labelledby="productCreateTitle">
-  <header class="modal-header"><div><span class="modal-kicker">NOVO CADASTRO</span><h2 id="productCreateTitle">Adicionar produto</h2></div><button type="button" class="modal-close" data-product-close aria-label="Fechar">×</button></header>
+  <header class="modal-header product-modal-header"><div class="modal-heading"><span class="modal-icon">+</span><div><span class="modal-kicker">CADASTRO DE ESTOQUE</span><h2 id="productCreateTitle">Novo produto</h2><p>Cadastre a peça e sua primeira variação.</p></div></div><button type="button" class="modal-close" data-product-close aria-label="Fechar">×</button></header>
   <form method="post" id="productCreateForm">
    <?=csrf_field()?><input type="hidden" name="action" value="product_save">
-   <div class="product-form-grid">
-    <div class="product-name-field"><label for="productName">Produto</label><input id="productName" name="nome" required></div>
-    <div><label>Categoria</label><input name="categoria"></div><div><label>Marca</label><input name="marca"></div>
-    <div><label>Cor</label><input name="cor"></div><div><label>Tamanho</label><input name="tamanho"></div><div><label>Referência</label><input name="referencia"></div>
-    <div><label>SKU interno</label><input name="sku" placeholder="Gerado automaticamente"></div><div><label>Código de barras</label><input name="codigo_barras" autocomplete="off"></div>
-    <div><label>Custo</label><input name="preco_custo" value="0,00" inputmode="decimal"></div><div><label>Lucro (%)</label><input name="lucro_percentual" value="<?=e(app_setting('lucro_padrao','100'))?>" inputmode="decimal"></div>
-    <div><label>Preço de venda</label><input name="preco_venda" placeholder="Calculado se vazio" inputmode="decimal"></div><div><label>Estoque inicial</label><input name="estoque_inicial" value="0" inputmode="decimal"></div>
-    <div><label>Estoque mínimo</label><input name="estoque_minimo" value="0" inputmode="decimal"></div><div><label>Localização</label><input name="localizacao"></div>
+   <div class="product-modal-body">
+    <section class="product-form-section"><div class="product-section-title"><span>1</span><div><strong>Identificação</strong><small>Informações principais da peça</small></div></div><div class="product-form-grid identification-grid">
+     <div class="product-name-field"><label for="productName">Nome do produto <b>*</b></label><input id="productName" name="nome" placeholder="Ex.: Camiseta básica feminina" required></div>
+     <div><label>Referência</label><input name="referencia" placeholder="Código do fornecedor"></div><div><label>Categoria</label><input name="categoria" placeholder="Ex.: Camisetas"></div><div><label>Marca</label><input name="marca" placeholder="Ex.: Marca própria"></div>
+    </div></section>
+    <section class="product-form-section"><div class="product-section-title"><span>2</span><div><strong>Variação e identificação</strong><small>Cor, tamanho e códigos desta peça</small></div></div><div class="product-form-grid variation-grid">
+     <div><label>Cor</label><input name="cor" placeholder="Ex.: Preto"></div><div><label>Tamanho</label><input name="tamanho" placeholder="Ex.: M"></div>
+     <div><label>SKU interno</label><input name="sku" placeholder="Gerado automaticamente"></div><div><label>Código de barras</label><input name="codigo_barras" placeholder="Leia ou digite o código" autocomplete="off"></div>
+    </div></section>
+    <section class="product-form-section"><div class="product-section-title"><span>3</span><div><strong>Preço e estoque</strong><small>O preço é calculado automaticamente pelo lucro</small></div></div><div class="product-form-grid commercial-grid">
+     <div><label for="productCost">Preço de custo</label><div class="input-addon"><span>R$</span><input id="productCost" name="preco_custo" value="0,00" inputmode="decimal"></div></div>
+     <div><label for="productProfit">Lucro</label><div class="input-addon suffix"><input id="productProfit" name="lucro_percentual" value="<?=e(app_setting('lucro_padrao','100'))?>" inputmode="decimal"><span>%</span></div></div>
+     <div><label for="productPrice">Preço de venda</label><div class="input-addon"><span>R$</span><input id="productPrice" name="preco_venda" placeholder="0,00" inputmode="decimal"></div></div>
+     <div><label>Estoque inicial</label><input name="estoque_inicial" value="0" inputmode="decimal"></div><div><label>Estoque mínimo</label><input name="estoque_minimo" value="0" inputmode="decimal"></div><div><label>Localização</label><input name="localizacao" placeholder="Ex.: Prateleira A2"></div>
+    </div></section>
    </div>
-   <footer class="modal-actions"><button type="button" class="btn ghost" data-product-close>Cancelar</button><button class="btn primary">Cadastrar produto</button></footer>
+   <footer class="modal-actions product-modal-actions"><button type="button" class="btn ghost" data-product-close>Cancelar</button><button class="btn primary">Salvar produto</button></footer>
   </form>
  </section>
 </div>
