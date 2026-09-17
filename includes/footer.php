@@ -3,10 +3,15 @@ document.querySelectorAll('[data-confirm]').forEach(x=>x.addEventListener('click
 document.addEventListener('keydown',e=>{if(e.key==='F2'){e.preventDefault();location.href='?page=pdv'}});
 const productModal=document.getElementById('productCreateModal');
 if(productModal){
- const productForm=document.getElementById('productCreateForm'),productName=document.getElementById('productName');
+ const productForm=document.getElementById('productCreateForm'),productName=document.getElementById('productName'),productCost=document.getElementById('productCost'),productProfit=document.getElementById('productProfit'),productPrice=document.getElementById('productPrice');
+ const parseProductValue=value=>{value=String(value||'').trim();if(value.includes(','))value=value.replace(/\./g,'').replace(',','.');return Number(value)||0;};
+ const formatProductValue=value=>Number(value||0).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});
+ const calculateProductPrice=()=>{const cost=parseProductValue(productCost.value),profit=parseProductValue(productProfit.value);productPrice.value=cost>0?formatProductValue(cost*(1+profit/100)):'';};
+ const calculateProductProfit=()=>{const cost=parseProductValue(productCost.value),price=parseProductValue(productPrice.value);if(cost>0&&price>=0)productProfit.value=formatProductValue(((price-cost)/cost)*100);};
+ productCost.addEventListener('input',calculateProductPrice);productProfit.addEventListener('input',calculateProductPrice);productPrice.addEventListener('input',calculateProductProfit);
  const closeProductModal=()=>{productModal.hidden=true;productModal.setAttribute('aria-hidden','true');document.body.classList.remove('modal-open');};
  document.querySelectorAll('[data-product-open]').forEach(button=>button.addEventListener('click',()=>{
-  productForm.reset();productModal.hidden=false;productModal.setAttribute('aria-hidden','false');document.body.classList.add('modal-open');requestAnimationFrame(()=>productName.focus());
+  productForm.reset();const code=productForm.querySelector('[name="codigo_barras"]');code.setCustomValidity('');if(code.nextElementSibling?.tagName==='SMALL')code.nextElementSibling.textContent='';productModal.hidden=false;productModal.setAttribute('aria-hidden','false');document.body.classList.add('modal-open');requestAnimationFrame(()=>productName.focus());
  }));
  productModal.querySelectorAll('[data-product-close]').forEach(button=>button.addEventListener('click',closeProductModal));
  productModal.addEventListener('click',event=>{if(event.target===productModal)closeProductModal();});
