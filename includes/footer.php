@@ -18,6 +18,18 @@ if(productModal){
  document.addEventListener('keydown',event=>{if(event.key==='Escape'&&!productModal.hidden)closeProductModal();});
  productForm.addEventListener('submit',event=>{const submit=event.currentTarget.querySelector('button:not([type])');submit.disabled=true;submit.textContent='Cadastrando...';});
 }
+const customerModal=document.getElementById('customerCreateModal');
+if(customerModal){
+ const customerForm=document.getElementById('customerCreateForm'),customerName=document.getElementById('customerName');
+ const closeCustomerModal=()=>{customerModal.hidden=true;customerModal.setAttribute('aria-hidden','true');document.body.classList.remove('modal-open');};
+ document.querySelectorAll('[data-customer-open]').forEach(button=>button.addEventListener('click',()=>{
+  customerForm.reset();customerModal.hidden=false;customerModal.setAttribute('aria-hidden','false');document.body.classList.add('modal-open');requestAnimationFrame(()=>customerName.focus());
+ }));
+ customerModal.querySelectorAll('[data-customer-close]').forEach(button=>button.addEventListener('click',closeCustomerModal));
+ customerModal.addEventListener('click',event=>{if(event.target===customerModal)closeCustomerModal();});
+ document.addEventListener('keydown',event=>{if(event.key==='Escape'&&!customerModal.hidden)closeCustomerModal();});
+ customerForm.addEventListener('submit',event=>{const submit=event.currentTarget.querySelector('button:not([type])');submit.disabled=true;submit.textContent='Salvando...';});
+}
 const stockModal=document.getElementById('stockAdjustModal');
 if(stockModal){
  const variationId=document.getElementById('stockVariationId'),productName=document.getElementById('stockProductName'),balance=document.getElementById('stockCurrentBalance'),quantity=document.getElementById('stockQuantity'),reason=document.getElementById('stockReason');
