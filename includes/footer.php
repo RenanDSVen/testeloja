@@ -1,6 +1,18 @@
 </main></div><script>
 document.querySelectorAll('[data-confirm]').forEach(x=>x.addEventListener('click',e=>{if(!confirm(x.dataset.confirm))e.preventDefault()}));
 document.addEventListener('keydown',e=>{if(e.key==='F2'){e.preventDefault();location.href='?page=pdv'}});
+const productModal=document.getElementById('productCreateModal');
+if(productModal){
+ const productForm=document.getElementById('productCreateForm'),productName=document.getElementById('productName');
+ const closeProductModal=()=>{productModal.hidden=true;productModal.setAttribute('aria-hidden','true');document.body.classList.remove('modal-open');};
+ document.querySelectorAll('[data-product-open]').forEach(button=>button.addEventListener('click',()=>{
+  productForm.reset();productModal.hidden=false;productModal.setAttribute('aria-hidden','false');document.body.classList.add('modal-open');requestAnimationFrame(()=>productName.focus());
+ }));
+ productModal.querySelectorAll('[data-product-close]').forEach(button=>button.addEventListener('click',closeProductModal));
+ productModal.addEventListener('click',event=>{if(event.target===productModal)closeProductModal();});
+ document.addEventListener('keydown',event=>{if(event.key==='Escape'&&!productModal.hidden)closeProductModal();});
+ productForm.addEventListener('submit',event=>{const submit=event.currentTarget.querySelector('button:not([type])');submit.disabled=true;submit.textContent='Cadastrando...';});
+}
 const stockModal=document.getElementById('stockAdjustModal');
 if(stockModal){
  const variationId=document.getElementById('stockVariationId'),productName=document.getElementById('stockProductName'),balance=document.getElementById('stockCurrentBalance'),quantity=document.getElementById('stockQuantity'),reason=document.getElementById('stockReason');
