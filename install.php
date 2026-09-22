@@ -4,6 +4,19 @@ $app=require __DIR__.'/config/app.php'; $db=require __DIR__.'/config/database.ph
 date_default_timezone_set($app['timezone']);
 $lock=__DIR__.'/storage/installed.lock'; $error='';
 if(is_file($lock)){ header('Location: login.php'); exit; }
+
+// Impede uma nova instalação caso apenas o arquivo de controle tenha sido
+// removido durante uma atualização ou envio por FTP.
+try{
+ $installedPdo=new PDO(sprintf('mysql:host=%s;port=%d;dbname=%s;charset=utf8mb4',$db['host'],$db['port'],$db['database']),$db['username'],$db['password'],[PDO::ATTR_ERRMODE=>PDO::ERRMODE_EXCEPTION]);
+ $adminCount=(int)$installedPdo->query('SELECT COUNT(*) FROM usuarios')->fetchColumn();
+ if($adminCount>0){
+  if(!is_dir(dirname($lock))) @mkdir(dirname($lock),0775,true);
+  @file_put_contents($lock,date('c'),LOCK_EX);
+  header('Location: login.php');exit;
+ }
+}catch(Throwable){}
+
 if($_SERVER['REQUEST_METHOD']==='POST'){
  try{
   if(!preg_match('/^[a-zA-Z0-9_]+$/',$db['database'])) throw new RuntimeException('Nome do banco inválido.');
@@ -19,7 +32,7 @@ if($_SERVER['REQUEST_METHOD']==='POST'){
   $s=$pdo->prepare("INSERT INTO usuarios(nome,usuario,senha_hash,nivel) VALUES(?,?,?,'admin')");
   $s->execute([$nome,$usuario,password_hash($senha,PASSWORD_DEFAULT)]);
   if(!is_dir(__DIR__.'/storage')) mkdir(__DIR__.'/storage',0775,true);
-  file_put_contents($lock,date('c'));
+  if(file_put_contents($lock,date('c'),LOCK_EX)===false) throw new RuntimeException('Não foi possível gravar o controle de instalação na pasta storage. Verifique a permissão da pasta.');
   header('Location: login.php?installed=1');exit;
  }catch(Throwable $e){$error=$e->getMessage();}
 }
