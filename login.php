@@ -1,6 +1,5 @@
 <?php
 require __DIR__.'/includes/bootstrap.php';
-if(!is_file(__DIR__.'/storage/installed.lock')) redirect(url('install.php'));
 if(!empty($_SESSION['user'])) redirect(url('index.php'));
 $error='';
 if($_SERVER['REQUEST_METHOD']==='POST'){
